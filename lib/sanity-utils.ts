@@ -1,11 +1,13 @@
-import { createClient } from "next-sanity"
+import { createClient } from "next-sanity";
 
 // Check if required environment variables are defined
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production"
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
 
 if (!projectId) {
-  console.error("Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID")
+  console.error(
+    "Missing required environment variable: NEXT_PUBLIC_SANITY_PROJECT_ID"
+  );
 }
 
 // Create client only if projectId is available
@@ -13,10 +15,10 @@ const client = projectId
   ? createClient({
       projectId,
       dataset,
-      apiVersion: "2023-05-03",
+      apiVersion: "2024-01-01",
       useCdn: process.env.NODE_ENV === "production",
     })
-  : null
+  : null;
 
 // Add fallback data for development
 const fallbackCategories = [
@@ -44,7 +46,7 @@ const fallbackCategories = [
     slug: "coding-tips",
     postCount: 6,
   },
-]
+];
 
 const fallbackPosts = [
   {
@@ -65,7 +67,8 @@ const fallbackPosts = [
     _id: "post-2",
     title: "The Future of AI in Web Development",
     slug: "future-of-ai-in-web-development",
-    excerpt: "Exploring how artificial intelligence is transforming the way we build websites",
+    excerpt:
+      "Exploring how artificial intelligence is transforming the way we build websites",
     mainImage: "/placeholder.svg?height=300&width=600",
     publishedAt: new Date().toISOString(),
     categories: [fallbackCategories[0], fallbackCategories[1]],
@@ -89,10 +92,10 @@ const fallbackPosts = [
       image: "/placeholder.svg?height=40&width=40",
     },
   },
-]
+];
 
 export async function getAllPosts() {
-  if (!client) return fallbackPosts
+  if (!client) return fallbackPosts;
 
   try {
     return await client.fetch(
@@ -113,18 +116,18 @@ export async function getAllPosts() {
           name,
           image
         }
-      }`,
-    )
+      }`
+    );
   } catch (error) {
-    console.error("Error fetching posts:", error)
-    return fallbackPosts
+    console.error("Error fetching posts:", error);
+    return fallbackPosts;
   }
 }
 
 export async function getPostBySlug(slug) {
   if (!client) {
-    const post = fallbackPosts.find((p) => p.slug === slug)
-    return post || null
+    const post = fallbackPosts.find((p) => p.slug === slug);
+    return post || null;
   }
 
   try {
@@ -152,16 +155,16 @@ export async function getPostBySlug(slug) {
           website
         }
       }`,
-      { slug },
-    )
+      { slug }
+    );
   } catch (error) {
-    console.error(`Error fetching post with slug ${slug}:`, error)
-    return null
+    console.error(`Error fetching post with slug ${slug}:`, error);
+    return null;
   }
 }
 
 export async function getFeaturedPost() {
-  if (!client) return fallbackPosts[0]
+  if (!client) return fallbackPosts[0];
 
   try {
     const featured = await client.fetch(
@@ -183,17 +186,17 @@ export async function getFeaturedPost() {
           image,
           role
         }
-      }`,
-    )
-    return featured || fallbackPosts[0]
+      }`
+    );
+    return featured || fallbackPosts[0];
   } catch (error) {
-    console.error("Error fetching featured post:", error)
-    return fallbackPosts[0]
+    console.error("Error fetching featured post:", error);
+    return fallbackPosts[0];
   }
 }
 
 export async function getAllCategories() {
-  if (!client) return fallbackCategories
+  if (!client) return fallbackCategories;
 
   try {
     return await client.fetch(
@@ -202,17 +205,19 @@ export async function getAllCategories() {
         title,
         slug: slug.current,
         "postCount": count(*[_type == "post" && references(^._id)])
-      }`,
-    )
+      }`
+    );
   } catch (error) {
-    console.error("Error fetching categories:", error)
-    return fallbackCategories
+    console.error("Error fetching categories:", error);
+    return fallbackCategories;
   }
 }
 
 export async function getPostsByCategory(categorySlug) {
   if (!client) {
-    return fallbackPosts.filter((post) => post.categories.some((cat) => cat.slug === categorySlug))
+    return fallbackPosts.filter((post) =>
+      post.categories.some((cat) => cat.slug === categorySlug)
+    );
   }
 
   try {
@@ -235,20 +240,20 @@ export async function getPostsByCategory(categorySlug) {
           image
         }
       }`,
-      { categorySlug },
-    )
+      { categorySlug }
+    );
   } catch (error) {
-    console.error(`Error fetching posts for category ${categorySlug}:`, error)
-    return []
+    console.error(`Error fetching posts for category ${categorySlug}:`, error);
+    return [];
   }
 }
 
 export async function getRelatedPosts(postId, categories) {
   if (!client) {
-    return fallbackPosts.filter((post) => post._id !== postId).slice(0, 3)
+    return fallbackPosts.filter((post) => post._id !== postId).slice(0, 3);
   }
 
-  const categoryIds = categories ? categories.map((cat) => cat._id) : []
+  const categoryIds = categories ? categories.map((cat) => cat._id) : [];
 
   try {
     return await client.fetch(
@@ -270,41 +275,45 @@ export async function getRelatedPosts(postId, categories) {
           image
         }
       }`,
-      { postId, categoryIds },
-    )
+      { postId, categoryIds }
+    );
   } catch (error) {
-    console.error("Error fetching related posts:", error)
-    return []
+    console.error("Error fetching related posts:", error);
+    return [];
   }
 }
 
 export async function searchPosts(query = "", category = "") {
   if (!client) {
-    let filteredPosts = [...fallbackPosts]
+    let filteredPosts = [...fallbackPosts];
 
     if (query) {
-      const lowerQuery = query.toLowerCase()
+      const lowerQuery = query.toLowerCase();
       filteredPosts = filteredPosts.filter(
-        (post) => post.title.toLowerCase().includes(lowerQuery) || post.excerpt.toLowerCase().includes(lowerQuery),
-      )
+        (post) =>
+          post.title.toLowerCase().includes(lowerQuery) ||
+          post.excerpt.toLowerCase().includes(lowerQuery)
+      );
     }
 
     if (category) {
-      filteredPosts = filteredPosts.filter((post) => post.categories.some((cat) => cat.slug === category))
+      filteredPosts = filteredPosts.filter((post) =>
+        post.categories.some((cat) => cat.slug === category)
+      );
     }
 
-    return filteredPosts
+    return filteredPosts;
   }
 
   try {
-    let searchQuery = `*[_type == "post"`
+    let searchQuery = `*[_type == "post"`;
 
     if (query) {
-      searchQuery += ` && (title match "*${query}*" || excerpt match "*${query}*")`
+      searchQuery += ` && (title match "*${query}*" || excerpt match "*${query}*")`;
     }
 
     if (category) {
-      searchQuery += ` && "${category}" in categories[]->slug.current`
+      searchQuery += ` && "${category}" in categories[]->slug.current`;
     }
 
     searchQuery += `] | order(publishedAt desc) {
@@ -324,12 +333,12 @@ export async function searchPosts(query = "", category = "") {
         name,
         image
       }
-    }`
+    }`;
 
-    return await client.fetch(searchQuery)
+    return await client.fetch(searchQuery);
   } catch (error) {
-    console.error("Error searching posts:", error)
-    return []
+    console.error("Error searching posts:", error);
+    return [];
   }
 }
 
@@ -372,7 +381,7 @@ export async function getAboutPage() {
           bio: "Designer with a passion for creating intuitive and beautiful interfaces.",
         },
       ],
-    }
+    };
   }
 
   try {
@@ -387,14 +396,14 @@ export async function getAboutPage() {
           image,
           bio
         }
-      }`,
-    )
+      }`
+    );
   } catch (error) {
-    console.error("Error fetching about page:", error)
+    console.error("Error fetching about page:", error);
     return {
       content: [],
       mainImage: "/placeholder.svg?height=600&width=1200",
       team: [],
-    }
+    };
   }
 }
